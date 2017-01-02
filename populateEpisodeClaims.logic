@@ -1,0 +1,21 @@
+Read from rxClaims, professionalClaims and instClaims
+	and insert into episodeClaims
+	
+	
+	Read n members with status='Active' randomly from members table
+		for each of these members do following
+			read rxClaims by member id and insert into episodeClaims, validate provider against provider table
+			read proClaims by member id and insert into episodeClaims, validate provider against provider table
+			read instClaims by member id and insert into episodeClaims, validate provider against provider table
+			
+			
+	Read n/2 members randomly from members table
+		delete from episodeClaims based on member id.
+			
+
+===============================================================================================================================================
+
+
+
+Delete from episodeClaims
+	
