@@ -34,7 +34,6 @@ def executeQueries(props):
 				cursor.execute(query, params)
 				rs = cursor.fetchone()
 				if(rs):
-					print '!@#$ ', len(rs)
 					result = rs[0]
 				else:
 					result = 'null'
@@ -51,23 +50,21 @@ def init():
 	return props
 	
 def initOracle(props):
-	import cx_Oracle
-	print props.get('db.oracle.userId')
-	print props.get('db.oracle.passwd')
-	print props.get('db.oracle.connectString.python')
-	#print 'user:%s, pwd:%s, server:%s' %(props.get('db.oracle.userId'), props.get('db.oracle.passwd'), props.get('db.oracle.connectString.python'))
-	#conn = cx_Oracle.connect(props.get('db.oracle.userId'), props.get('db.oracle.passwd'), props.get('db.oracle.connectString.python'))
 	conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
 	return conn
 
 
 def main():
+	start = time.time()
 	properties = init()	
 	executeQueries(properties)
+	elapsed = (time.time() - start)	
+	print 'result {} took {}'.format(result, elapsed)
 
 
 if __name__ == '__main__':
 	import sys
 	import re
 	import time
+	import cx_Oracle
 	main()
