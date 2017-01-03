@@ -93,24 +93,24 @@ def populateEpisodeClaimFromTable(tableName):
 	cursor2=conn2.cursor()
 	cursor2.prepare("insert into json_episodeclaims (json_doc) values(:1)")
         count = 0
-        commitCount=0
         massiveData=[]
 
         for result in cursor.fetchall():
                 _json = json.loads(result[0])
                 del massiveData[:]
-                print 'Data {}'.format(_json)
+                #print 'Data {}'.format(_json)
               	massiveData.append(getEpisodeJson(_json))
 		#print 'inserting {} into json_episodeclaims'.format(massiveData)
-		#cursor2.execute(None, massiveData)
-		#conn2.commit()
-         	#count = count + 1
-                #commitCount += 1
+		cursor2.execute(None, massiveData)
+         	count = count + 1
         
         cursor2.close()
+        conn2.commit()
         conn2.close()
+
         cursor.close()
         connection.close()
+
         print "Total Records Inserted {}".format(count)
 	
 	elapsed = (time.time() - start)	
@@ -126,10 +126,10 @@ def processEpisodeClaims():
 	#'''	read instClaims by member id and insert into episodeClaims, validate provider against provider table '''
 	#'''		
 
-	#deleteEpisodeClaims()
+	deleteEpisodeClaims()
 	populateFromRxClaims()
-	#populateFromInstClaims()
-	#populateFromProfessionalClaims()
+	populateFromInstClaims()
+	populateFromProfessionalClaims()
 
 def deleteEpisodeClaims():
 	connection = initOracle();	
@@ -141,7 +141,7 @@ def deleteEpisodeClaims():
 	for member in membersList:
 		try:
 			cursor.execute(None, memberid=member)		
-			#result = cursor.fetchone()[0]
+			#result = cursor.fetchone()
 			#print 'delete returned {}'.format(result)
 		except cx_Oracle.DatabaseError, exception:
 			printf ('Failed to execute cursor\n')
