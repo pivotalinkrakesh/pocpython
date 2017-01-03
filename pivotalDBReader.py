@@ -7,10 +7,13 @@ def readFile(filename):
 	props = {}
 	for line in propsfile.readlines():
 		if(line.strip()):
-			key,val = line.split('=',1)
-			props[key]=val.strip('\n')
+			#print line
+			if(line.find('#') <0):
+				key,val = line.split('=',1)
+				props[key]=val.strip('\n')
 
 	#print "dict data",props
+	
 	return props
 
 def executeQueries(props):
@@ -18,20 +21,25 @@ def executeQueries(props):
 	cursor = connection.cursor()
 
 	queries=[]
-	for k in props.keys():
+	params=[]
+
+	for k in sorted(props.keys()):
 		match = re.search(r'\.query', k)
 		if(match):
-			queries.append(props.get(k))
-
-	params=[]
-	for query in queries:
-		match  = re.search(r'\?', query)
-		if (not match):
-			print 'Executing query...', query
-			start = time.time()
-			cursor.execute(query, params)
-			elapsed = (time.time() - start)	
-			print elapsed, ' seconds'
+			query = props.get(k)
+			match  = re.search(r'\?', query)
+			if (not match):
+				print '### Executing query id:{} sql:{}'.format(k,query)
+				start = time.time()
+				cursor.execute(query, params)
+				rs = cursor.fetchone()
+				if(rs):
+					print '!@#$ ', len(rs)
+					result = rs[0]
+				else:
+					result = 'null'
+				elapsed = (time.time() - start)	
+				print 'result {} took {}'.format(result, elapsed)
 		
 
 def init():

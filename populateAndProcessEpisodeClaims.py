@@ -1,3 +1,4 @@
+import sys
 import json
 import cx_Oracle
 import random
@@ -47,13 +48,7 @@ def populateEpisodeSids():
 				sidjson = json.loads(line[:-2])
 			#print sidjson.get('episodeSid')
 			episodeSidList.append(sidjson.get('episodeSid'))
-	print episodeSidList
-
-def populateEpisodeClaims():
-	#populateFromRxClaims()
-	#populateFromInstClaims()
-	populateFromProfessionalClaims()
-
+	#print episodeSidList
 
 def populateFromRxClaims():
 	global episodefields
@@ -74,17 +69,24 @@ def populateFromProfessionalClaims():
 	populateEpisodeClaimFromTable('JSON_PROFESSIONALCLAIMS')
 
 def populateEpisodeClaimFromTable(tableName):
-
+	global membersList
 	print 'loading from table:{}'.format(tableName)
 	connection = initOracle()	
 	cursor = connection.cursor()
 	params=[]
 	
-	query = 'select json_doc from ' + tableName
+	query = 'select xx.json_doc from ' + tableName + ' xx where xx.json_doc.memberId in :1'
+	try:
+		cursor.prepare(query)
+	except cx_Oracle.DatabaseError, exception:
+		printf ('Failed to prepare query %s\n',query)
+		printException (exception)
+		exit (1)
+
 	print 'Executing select on {} using query {}...'.format(tableName, query)
 	start = time.time()
 	cursor.arraysize = readsize
-	cursor.execute(query, params)
+	cursor.execute(None, membersList)
 	
 	# get another connection
 	conn2 = initOracle()
@@ -97,17 +99,12 @@ def populateEpisodeClaimFromTable(tableName):
         for result in cursor.fetchall():
                 _json = json.loads(result[0])
                 del massiveData[:]
-                #print 'Data {}'.format(_json)
+                print 'Data {}'.format(_json)
               	massiveData.append(getEpisodeJson(_json))
-		#if(commitCount >= 100):
-			#reset commit count.
-			#cursor2.executemany(None,massiveData)
-			#conn2.commit()
-			#commitCount=0
 		#print 'inserting {} into json_episodeclaims'.format(massiveData)
-		cursor2.execute(None, massiveData)
-		conn2.commit()
-         	count = count + 1
+		#cursor2.execute(None, massiveData)
+		#conn2.commit()
+         	#count = count + 1
                 #commitCount += 1
         
         cursor2.close()
@@ -120,51 +117,40 @@ def populateEpisodeClaimFromTable(tableName):
 	print elapsed, ' seconds'
 
 
-def processEpisodeClaims(props):
+def processEpisodeClaims():
 
-	'''Read n members with status='Active' randomly from members table '''
-	''' Delete from json_episodeclaims where memberId in n
-	'''	read rxClaims by member id and insert into episodeClaims '''
-	'''	read proClaims by member id and insert into episodeClaims, validate provider against provider table '''
-	'''	read instClaims by member id and insert into episodeClaims, validate provider against provider table '''
-	'''		
+	#'''Read n members with status='Active' randomly from members table '''
+	#''' Delete from json_episodeclaims where memberId in n
+	#'''	read rxClaims by member id and insert into episodeClaims '''
+	#'''	read proClaims by member id and insert into episodeClaims, validate provider against provider table '''
+	#'''	read instClaims by member id and insert into episodeClaims, validate provider against provider table '''
+	#'''		
 
+	#deleteEpisodeClaims()
+	populateFromRxClaims()
+	#populateFromInstClaims()
+	#populateFromProfessionalClaims()
+
+def deleteEpisodeClaims():
 	connection = initOracle();	
 	cursor = connection.cursor()
+	print 'Deleting from episodeclaims'
 
-	
-	cursor.execute('select json_doc from json_members where json_doc._id=\"Active\"')
+	cursor.prepare('delete from json_episodeclaims rx where rx.json_doc.memberId=:memberid')
 
-        #colnames = [desc[0] for desc in cursor.description]
-        #print(colnames)
-        count = 0
-        for row in cursor.fetchall():
-                #print(row)
-                
-                _jsondata = json.loads(row)
-                
-                count = count + 1
-                for (name, value) in zip(colnames, row):
-                        print(name, '\t->', value)
-                        print
+	for member in membersList:
+		try:
+			cursor.execute(None, memberid=member)		
+			#result = cursor.fetchone()[0]
+			#print 'delete returned {}'.format(result)
+		except cx_Oracle.DatabaseError, exception:
+			printf ('Failed to execute cursor\n')
+			printException (exception)
+			exit (1)	
 
-
-	queries=[]
-	for k in props.keys():
-		match = re.search(r'\.query', k)
-		if(match):
-			queries.append(props.get(k))
-
-	params=[]
-	for query in queries:
-		match  = re.search(r'\?', query)
-		if (not match):
-			print 'Executing query...', query
-			start = time.time()
-			cursor.execute(query, params)
-			elapsed = (time.time() - start)	
-			print elapsed, ' seconds'
-
+	cursor.close()
+	connection.commit()
+	connection.close()
 
 
 def readMembersData():
@@ -178,17 +164,15 @@ def readMembersData():
 	_randList = getRandomList()
 	
 	randomMember=_randList.pop(0)
-	i=0
-	for result in cursor.fetchall()
+	for result in cursor.fetchall():
 		_count += 1
 		if(_count == randomMember):
-			memberList[i]=result[0]
-			i += 1
+			membersList.append(result[0])
 			if len(_randList) >0:
 				randomMember=_randList.pop(0)
 			else:
 				break
-	print 'memberList is {}'.format(membersList)
+	print 'membersList is {}'.format(membersList)
 	
 	
 def getRandomList():
@@ -199,14 +183,14 @@ def getRandomList():
 	totalrecs = 1999
 
 	# Number of records to process
-	nummembers = props.get('membersToProcess')
-	print("Random member records to process", nummembers)
+	nummembers = int(props.get('membersToProcess'))
+	print "Random member records to process {}".format(nummembers)
 	
 	# save random number in a list.
 	_randList = []
-	for i in range nummembers:
-	_randList.append(randrange(totalrecs))
-	_randList.sort()
+	for i in range(nummembers):
+		_randList.append(random.randrange(totalrecs))
+		_randList.sort()
 	print _randList
 	return _randList
 
@@ -223,7 +207,6 @@ def init():
 def readProperties(filename):
 	print 'Reading properties file {} '.format(filename)
 	global props
-	print 'Reading file %s', filename
 	propsfile = open(filename, 'r')
 	for line in propsfile.readlines():
 		if(line.strip()):
@@ -232,13 +215,19 @@ def readProperties(filename):
 
 def initOracle():
 	import cx_Oracle
-	conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
+	try:
+		conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
+	except cx_Oracle.DatabaseError, exception:
+		printf ('Failed to connect to %s\n',databaseName)
+		printException (exception)
+		exit (1)
+
 	return conn
 
 
 def main():
 	init()
-	populateEpisodeClaims()
+	processEpisodeClaims()
 
 if __name__== '__main__':
 	main()
