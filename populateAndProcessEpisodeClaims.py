@@ -1,3 +1,4 @@
+import cx_Oracle
 import sys
 import json
 import cx_Oracle
@@ -141,8 +142,8 @@ def deleteEpisodeClaims():
 	for member in membersList:
 		try:
 			cursor.execute(None, memberid=member)		
-			#result = cursor.fetchone()
-			#print 'delete returned {}'.format(result)
+			result = cursor.rowcount
+			print 'Table: [episodeClaims] Total Records deleted {}'.format(result)
 		except cx_Oracle.DatabaseError, exception:
 			printf ('Failed to execute cursor\n')
 			printException (exception)
@@ -214,7 +215,6 @@ def readProperties(filename):
 			props[key]=val.strip('\n')
 
 def initOracle():
-	import cx_Oracle
 	try:
 		conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
 	except cx_Oracle.DatabaseError, exception:
@@ -226,6 +226,7 @@ def initOracle():
 
 
 def main():
+
 	init()
 	processEpisodeClaims()
 

@@ -74,12 +74,12 @@ def populateFromProfessionalClaims():
 def populateEpisodeClaimFromTable(tableName):
 	print 'loading from table:{}'.format(tableName)
 	start = time.time()
-
+	
 	connection = initOracle()	
 	cursor = connection.cursor()
 	params=[]
 	
-	query = 'select json_doc from ' + tableName
+	query = 'select json_document from ' + tableName
 	#print 'Executing select on {} using query {}...'.format(tableName, query)
 
 	cursor.arraysize = readsize
@@ -88,35 +88,34 @@ def populateEpisodeClaimFromTable(tableName):
 	# get another connection
 	conn2 = initOracle()
 	cursor2=conn2.cursor()
-	cursor2.prepare("insert into json_episodeclaims (json_doc) values(:1)")
+	cursor2.prepare("insert into hyb_episodeclaims (json_document, memberid, \"_ID\") values(:json,:memberId,:id)")
         count = 0
-        massiveData=[]
+        massiveData={}
         # INSERT ONE RECORD
         #rs =cursor.fetchone()
         #_json = json.loads(rs[0])
-	#massiveData.append(getEpisodeJson(_json))
+        #print _json
+        #jsondoc=getEpisodeJson(_json)
+        #massiveData['json']=jsondoc
+        #massiveData['memberId']=_json.get('memberId')
+        #massiveData['id']=_json['_id']
 	#print 'inserting {} into json_episodeclaims'.format(massiveData)
+	#massiveData.append((jsondoc, 'false', _json['_id']))
 	#cursor2.execute(None, massiveData)
-	#conn2.commit()
-
+	
         for result in cursor.fetchall():
+                massiveData.clear()
                 _json = json.loads(result[0])
-                del massiveData[:]
-                #print 'Data {}'.format(_json)
-              	massiveData.append(getEpisodeJson(_json))
-		#if(commitCount >= 100):
-			#reset commit count.
-			#cursor2.executemany(None,massiveData)
-			#conn2.commit()
-			#commitCount=0
-		#print 'inserting {} into json_episodeclaims'.format(massiveData)
+                jsondoc=getEpisodeJson(_json)
+		massiveData['json']=jsondoc
+		massiveData['memberId']=_json.get('memberId')
+		massiveData['id']=_json['_id']
 		cursor2.execute(None, massiveData)
          	count = count + 1
         
         cursor2.close()
-	conn2.commit()
+        conn2.commit()
         conn2.close()
-
         cursor.close()
         connection.close()
         print "Total Records Inserted {}".format(count)
@@ -139,8 +138,10 @@ def main():
 	start = time.time()
 	init()
 	populateEpisodeClaims()
+
 	elapsed = (time.time() - start)	
 	print '### Total execution time {} secnds'.format(elapsed)
+
 
 if __name__== '__main__':
 	main()
