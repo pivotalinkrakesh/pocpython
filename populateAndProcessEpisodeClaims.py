@@ -226,9 +226,13 @@ def initOracle():
 
 
 def main():
+	start = time.time()
 
 	init()
 	processEpisodeClaims()
+
+	elapsed = (time.time() - start)	
+	print '### Total execution time {} secnds'.format(elapsed)
 
 if __name__== '__main__':
 	main()

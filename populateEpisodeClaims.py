@@ -79,7 +79,7 @@ def populateEpisodeClaimFromTable(tableName):
 	cursor = connection.cursor()
 	params=[]
 	
-	query = 'select json_doc from ' + tableName
+	query = 'select json_document from ' + tableName
 	#print 'Executing select on {} using query {}...'.format(tableName, query)
 
 	cursor.arraysize = readsize
@@ -88,7 +88,7 @@ def populateEpisodeClaimFromTable(tableName):
 	# get another connection
 	conn2 = initOracle()
 	cursor2=conn2.cursor()
-	cursor2.prepare("insert into json_episodeclaims (json_doc) values(:1)")
+	cursor2.prepare("insert into json_episodeclaims (json_document) values(:1)")
         count = 0
         massiveData=[]
         # INSERT ONE RECORD
