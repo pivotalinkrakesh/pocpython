@@ -42,8 +42,8 @@ def executeQueries(props):
 			
 			result = count
 			
-		elapsed = (time.time() - start)	
-		print 'query {}: took {}: Result {} '.format(k, elapsed, result)
+		elapsed = int((time.time() - start)/100)	
+		print 'query {}, {}, {} '.format(k, elapsed, result)
 		
 
 def init():
