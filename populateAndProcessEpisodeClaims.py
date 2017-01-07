@@ -13,7 +13,7 @@ props = {}
 
 claimfields=['_id', 'subClientId', 'memberId', 'episodeSid', 'claimNumber', 'claimLineNumber', 'claimType', 'processDate']
 
-rxclaimsfields=['_id', 'subClientId', 'memberId', 'episodeSid', 'claimNumber', 'claimLineNumber', 'claimType', 'processEndDate']
+rxclaimsfields=['_id', 'subClientId', 'memberId', 'episodeSid', 'claimNumber', 'claimLineNumber', 'claimType', 'processDate']
 instclaimsfields=['_id', 'subClientId', 'memberId', 'episodeSid', 'claimNumber', 'claimLineNumber', 'claimType', 'processEndDate']
 professionalclaimsfields=['_id', 'subClientId', 'memberId', 'episodeSid', 'claimNumber', 'claimLineNumber', 'claimType', 'processDate']
 
@@ -71,12 +71,14 @@ def populateFromProfessionalClaims():
 
 def populateEpisodeClaimFromTable(tableName):
 	global membersList
+
+	start = time.time()
 	print 'loading from table:{}'.format(tableName)
 	connection = initOracle()	
 	cursor = connection.cursor()
 	params=[]
 	
-	query = 'select xx.json_doc from ' + tableName + ' xx where xx.json_doc.memberId in :1'
+	query = 'select xx.json_document from ' + tableName + ' xx where xx.json_document.memberId in :1'
 	try:
 		cursor.prepare(query)
 	except cx_Oracle.DatabaseError, exception:
@@ -84,15 +86,14 @@ def populateEpisodeClaimFromTable(tableName):
 		printException (exception)
 		exit (1)
 
-	print 'Executing select on {} using query {}...'.format(tableName, query)
-	start = time.time()
+	#print 'Executing select on {} using query {}...'.format(tableName, query)
 	cursor.arraysize = readsize
 	cursor.execute(None, membersList)
 	
 	# get another connection
 	conn2 = initOracle()
 	cursor2=conn2.cursor()
-	cursor2.prepare("insert into json_episodeclaims (json_doc) values(:1)")
+	cursor2.prepare("insert into json_episodeclaims (json_document) values(:1)")
         count = 0
         massiveData=[]
 
@@ -112,10 +113,8 @@ def populateEpisodeClaimFromTable(tableName):
         cursor.close()
         connection.close()
 
-        print "Total Records Inserted {}".format(count)
-	
 	elapsed = (time.time() - start)	
-	print elapsed, ' seconds'
+	print "Inserted {} records from Table:{} and took {} seconds'.format(count, tableName, elapsed)
 
 
 def processEpisodeClaims():
@@ -133,11 +132,12 @@ def processEpisodeClaims():
 	populateFromProfessionalClaims()
 
 def deleteEpisodeClaims():
+	start = time.time()
 	connection = initOracle();	
 	cursor = connection.cursor()
 	print 'Deleting from episodeclaims'
 
-	cursor.prepare('delete from json_episodeclaims rx where rx.json_doc.memberId=:memberid')
+	cursor.prepare('delete from json_episodeclaims rx where rx.json_document.memberId=:memberid')
 
 	for member in membersList:
 		try:
@@ -153,6 +153,9 @@ def deleteEpisodeClaims():
 	connection.commit()
 	connection.close()
 
+	elapsed = (time.time() - start)	
+	print '### deleteEpisodeClaims Deleted {} record took time {} seconds'.format(result, elapsed)
+
 
 def readMembersData():
 	global membersList
@@ -160,7 +163,7 @@ def readMembersData():
 	conn = initOracle()
 	# read members data into a collection.
 	cursor = conn.cursor()
-	cursor.execute("select members.json_doc.baseKey from json_members members where members.json_doc.status = \'Accepted\'")
+	cursor.execute("select members.json_document.baseKey from json_members members where members.json_document.status = \'Accepted\'")
 	_count=0
 	_randList = getRandomList()
 	
@@ -178,7 +181,7 @@ def readMembersData():
 	
 def getRandomList():
 	# Get Total Records from Table where status='Active'.
-	#cursor.execute('select count(*) from members where json_doc.id=\"Active\"')
+	#cursor.execute('select count(*) from members where json_document.id=\"Active\"')
 	#totalrecs = cursor.fetch()
 	# for sake of POC we know we have 1999 members
 	totalrecs = 1999
@@ -216,9 +219,9 @@ def readProperties(filename):
 
 def initOracle():
 	try:
-		conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
+		conn = cx_Oracle.connect('med_json', 'med_json', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
 	except cx_Oracle.DatabaseError, exception:
-		printf ('Failed to connect to %s\n',databaseName)
+		printf ('Failed to connect to %s\n','med_json')
 		printException (exception)
 		exit (1)
 
@@ -232,7 +235,7 @@ def main():
 	processEpisodeClaims()
 
 	elapsed = (time.time() - start)	
-	print '### Total execution time {} secnds'.format(elapsed)
+	print '### Total execution time {} seconds'.format(elapsed)
 
 if __name__== '__main__':
 	main()

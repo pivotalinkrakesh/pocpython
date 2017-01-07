@@ -11,7 +11,7 @@ def getEpisodeJson(claimDict):
 
 
 def executeQuery(tableName):
-	conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
+	conn = cx_Oracle.connect('med_json', 'med_json', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
 	cursor = conn.cursor()
 	params=[]
 	

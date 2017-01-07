@@ -140,7 +140,7 @@ def main():
 	init()
 	populateEpisodeClaims()
 	elapsed = (time.time() - start)	
-	print '### Total execution time {} secnds'.format(elapsed)
+	print '### Total execution time {} seconds'.format(elapsed)
 
 if __name__== '__main__':
 	main()

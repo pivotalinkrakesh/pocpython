@@ -2,15 +2,17 @@
 defaultpropertiesfile = 'inquirer.properties'
 
 def readFile(filename):
-	print 'Reading file %s', filename
+	print 'Reading file {}'.format(filename)
 	propsfile = open(filename, 'r')
 	props = {}
 	for line in propsfile.readlines():
 		if(line.strip()):
 			#print line
 			if(line.find('#') <0):
-				key,val = line.split('=',1)
-				props[key]=val.strip('\n')
+				match = re.search(r'QUERY', line)
+				if(match):
+					key,val = line.split('=',1)
+					props[key]=val.strip('\n')
 
 	#print "dict data",props
 	
@@ -24,21 +26,24 @@ def executeQueries(props):
 	params=[]
 
 	for k in sorted(props.keys()):
-		match = re.search(r'\.query', k)
-		if(match):
-			query = props.get(k)
-			match  = re.search(r'\?', query)
-			if (not match):
-				print '### Executing query id:{} sql:{}'.format(k,query)
-				start = time.time()
-				cursor.execute(query, params)
-				rs = cursor.fetchone()
-				if(rs):
-					result = rs[0]
-				else:
-					result = 'null'
-				elapsed = (time.time() - start)	
-				print 'result {} took {}'.format(result, elapsed)
+		query = props.get(k)
+		#print '### Executing query id:{} sql:{}'.format(k,query)
+		start = time.time()
+
+		cursor.execute(query, params)
+		
+		if(k.find('COUNT') >=0):
+			rs = cursor.fetchone()
+			result = rs[0]
+		else:
+			count=0
+			for row in cursor.fetchall():
+				count += 1
+			
+			result = count
+			
+		elapsed = (time.time() - start)	
+		print 'query {}: took {}: Result {} '.format(k, elapsed, result)
 		
 
 def init():
@@ -50,7 +55,7 @@ def init():
 	return props
 	
 def initOracle(props):
-	conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
+	conn = cx_Oracle.connect('med_json', 'med_json', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
 	return conn
 
 
@@ -59,7 +64,7 @@ def main():
 	properties = init()	
 	executeQueries(properties)
 	elapsed = (time.time() - start)	
-	print 'result {} took {}'.format(result, elapsed)
+	print '### Total execution time {} seconds'.format(elapsed)
 
 
 if __name__ == '__main__':

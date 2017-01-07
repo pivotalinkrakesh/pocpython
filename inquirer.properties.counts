@@ -1,0 +1,160 @@
+configName=Inquirer config
+
+##db.oracle.connectString=jdbc:oracle:thin:@localhost:1521:orcl
+db.oracle.connectString=jdbc:oracle:thin:@129.144.154.94:1521:pdb1.a428714.oraclecloud.internal
+db.oracle.connectString.python=129.144.154.94:1521/pdb1.a428714.oraclecloud.internal
+db.oracle.userId=med_json
+db.oracle.passwd=med_json
+
+
+ALL JSON_INSTCLAIMS COUNT QUERY=select count(*) from json_instclaims
+ALL JSON_MEMBER COUNT QUERY=select count(*) from json_members
+ALL JSON_PROVIDER COUNT QUERY=select count(*) from json_providers
+
+CLAIM QUERY WITH ID=select count(*) from json_instclaims jc where jc.json_document."_id"='Ap2XjFNnsFTNlVaI4-5-1481257921969'
+CLAIM QUERY WITH BASEKEY ISLATEST=select count(*) from json_instclaims jc where jc.json_document.baseKey='LC5uVHO9WHTVtxWtS' and jc.json_document.isLatest='false'
+CLAIM QUERY WITH SRC_ID STATUS=select count(*) from json_instclaims jc where jc.json_document.sourceIdentifier='MIDO' and jc.json_document.status='Accepted'
+CLAIM QUERY WITH MEMBER_ID=select count(*) from json_instclaims jc where jc.json_document.memberId='gNuv41538405fMxnvc'
+CLAIM QUERY WITH MEMBER_ID STATUS=select count(*) from json_instclaims jc where jc.json_document.memberId='gNuv41538405fMxnvc' and jc.json_document.status='Accepted'
+CLAIM QUERY WITH MEMBER_ID SUBSCRIBER_ID=select count(*) from json_instclaims jc where jc.json_document.membershipId='iyvR12791806jLdLak' and jc.json_document.subscriberId='iyvR12791806jLdLak'
+
+MEMBER QUERY WITH ID=select count(*) from json_members jm where jm.json_document."_id"='PQfZ49365150hSJMDv-1481415102236'
+MEMBER QUERY WITH BASEKEY ISLATEST=select count(*) from json_members jm where jm.json_document.baseKey='gNuv41538405fMxnvc' and jm.json_document.isLatest='false'
+MEMBER QUERY WITH SRC_ID STATUS=select count(*) from json_members jm where jm.json_document.sourceIdentifier='MIDx' and jm.json_document.status='Accepted'
+MEMBER QUERY WITH MEMBERID=select count(*) from json_members jm where jm.json_document.memberId='gNuv41538405fMxnvc'
+MEMBER QUERY WITH MEMBERID STATUS=select count(*) from json_members jm where jm.json_document.memberId='gNuv41538405fMxnvc' and jm.json_document.status='Accepted'
+MEMBER QUERY WITH MEMBERSHIPID SUBSCRIBER_ID=select count(*) from json_members jm where jm.json_document.coverages.membershipId='gNuv41538405fMxnvc' and jm.json_document.coverages.subscriberId='gNuv41538405fMxnvc'
+
+
+PROVIDER QUERY WITH ID=select count(*) from json_providers jp where jp.json_document."_id"='119975724-1481415564724'
+PROVIDER QUERY WITH BASEKEY ISLATEST=select count(*) from json_providers jp where jp.json_document.baseKey='119975724' and jp.json_document.isLatest='false'
+PROVIDER QUERY WITH SRCID STATUS=select count(*) from json_providers jp where jp.json_document.sourceIdentifier='x12_4050_274R_GroupSiteProvider_20141116.edi' and jp.json_document.status='Accepted'
+
+#JSON_RXCLAIMS
+RXCLAIMS QUERY WITH ID STATUS=SELECT count(*) FROM JSON_RXCLAIMS JC WHERE JC.json_document."_id"='v6noACJI6QFYDPfRP--1482450814509'
+RXCLAIMS QUERY WITH BASEKEY ISLATEST=SELECT count(*) FROM JSON_RXCLAIMS JC WHERE JC.json_document.baseKey='v6noACJI6QFYDPfRP' AND JC.json_document.isLatest='false'
+RXCLAIMS QUERY WITH SRCID STATUS=SELECT count(*) FROM JSON_RXCLAIMS JC WHERE JC.json_document.sourceIdentifier='MIDA' AND JC.json_document.status='Accepted'
+RXCLAIMS QUERY WITH MEMBERID=SELECT count(*) FROM JSON_RXCLAIMS JC WHERE JC.json_document.memberId='EBKe54078574iglwfX'
+RXCLAIMS QUERY WITH MEMBERID STATUS=SELECT count(*) FROM JSON_RXCLAIMS JC WHERE JC.json_document.memberId='fciL61334963NuvCea' AND JC.json_document.status='Accepted'
+#???? both cols dont exist AS EXPECTED
+RXCLAIMS PLACEHOLDER COUNT QUERY=SELECT count(*) FROM JSON_RXCLAIMS JC
+
+#JSON_PROFESSIONALCLAIMS
+PROFCLAIMS QUERY WITH ID=SELECT count(*) FROM JSON_PROFESSIONALCLAIMS JC WHERE JC.json_document."_id"='129wVPISodymZ2KzX-1-1482442107568'
+PROFCLAIMS QUERY WITH BASEKEY ISLATEST=SELECT count(*) FROM JSON_PROFESSIONALCLAIMS JC WHERE JC.json_document.baseKey='iYuwSAkDFY6eVNXUG' AND JC.json_document.isLatest='false'
+PROFCLAIMS QUERY WITH SRCID STATUS=SELECT count(*) FROM JSON_PROFESSIONALCLAIMS JC WHERE JC.json_document.sourceIdentifier='MIDt' AND JC.json_document.status='Accepted'
+PROFCLAIMS QUERY WITH MEMBERID=SELECT count(*) FROM JSON_PROFESSIONALCLAIMS JC WHERE JC.json_document.memberId='Vbay30687074gCjxGA'
+PROFCLAIMS QUERY WITH MEMBERID STATUS=SELECT count(*) FROM JSON_PROFESSIONALCLAIMS JC WHERE JC.json_document.memberId='mwvE59916899ostOAi' AND JC.json_document.status='Accepted'
+
+#subscriberId is null AS EXPECTED
+PROFCLAIMS PLACEHOLDER QUERY WITH MEMBERSHIPID SUBSCRIBERID=SELECT count(*) FROM JSON_PROFESSIONALCLAIMS JC WHERE JC.json_document.memberShipId='nBYO22675928UzwjTD' AND JC.json_document.subscriberId is null
+
+## HYBRID queries
+
+#HYB_INSTCLAIMS
+#note _Id is blank in main column??
+HYB_INSTCLAIMS QUERY WITH ID=SELECT count(*) FROM HYB_INSTCLAIMS WHERE "_ID" = 'kKVdIoVC37Sl8Hwm4-27-1482452545018'
+HYB_INSTCLAIMS QUERY WITH SRCID=SELECT count(*) FROM HYB_INSTCLAIMS WHERE SOURCEIDENTIFIER = 'MIDL'
+HYB_INSTCLAIMS QUERY WITH STATUS=SELECT count(*) FROM HYB_INSTCLAIMS WHERE STATUS = 'Accepted'
+HYB_INSTCLAIMS QUERY WITH CLAIMNUMBER=SELECT count(*) FROM HYB_INSTCLAIMS hc WHERE hc.json_document.claimNumber = 'qwQSn0fq9BhQyoSkq'
+HYB_INSTCLAIMS QUERY WITH SRCID STATUS=SELECT count(*) FROM HYB_INSTCLAIMS WHERE SOURCEIDENTIFIER = 'MIDb' AND STATUS= 'Accepted'
+HYB_INSTCLAIMS QUERY WITH BASEKEY=SELECT count(*) FROM HYB_INSTCLAIMS WHERE BASEKEY = 'axcp1LgIBL8hJnjcH'
+HYB_INSTCLAIMS QUERY WITH BASEKEY CLAIMNUMBER=SELECT count(*) FROM HYB_INSTCLAIMS hc WHERE  BASEKEY = 'axcp1LgIBL8hJnjcH' AND hc.json_document.claimNumber = 'jlNmn4narm192aBCA'
+
+#HYB_MEMBERS
+HYB_MEMBERS QUERY WITH ID=SELECT count(*) FROM HYB_MEMBERS WHERE "_ID" = 'OVZb96446602wCPMSu-1481415109578'
+HYB_MEMBERS QUERY WITH SRCID=SELECT count(*) FROM HYB_MEMBERS WHERE SOURCEIDENTIFIER = 'MIDy'
+HYB_MEMBERS QUERY WITH STATUS=SELECT count(*) FROM HYB_MEMBERS WHERE STATUS = 'Accepted'
+
+#claimnumber is null, not in json as well ???
+HYB_MEMBERS QUERY WITH CLAIMNUMBER=SELECT count(*) FROM HYB_MEMBERS 
+HYB_MEMBERS QUERY WITH SRCID STATUS=SELECT count(*) FROM HYB_MEMBERS WHERE SOURCEIDENTIFIER = 'MIDI' AND STATUS= 'Accepted'
+HYB_MEMBERS QUERY WITH BASEKEY=SELECT count(*) FROM HYB_MEMBERS WHERE BASEKEY = 'XeaQ13174925SxHxqp'
+
+#climnumnber is null
+HYB_MEMBERS QUERY WITH BASEKEY CLAIMNUMBER=SELECT count(*) FROM HYB_MEMBERS WHERE  BASEKEY = 'eeBi19218018uwAtNP' AND MEMBERID = 'FVtp37593659XyYZaq'
+
+
+
+##HYB_PROVIDERS
+
+# _id is null
+
+HYB_PROVIDERS QUERY WITH ID=Select count(*) from HYB_PROVIDERS WHERE "_ID" = '332238394-1481415666289'
+
+HYB_PROVIDERS QUERY WITH SRCID=Select count(*) from HYB_PROVIDERS WHERE SOURCEIDENTIFIER = 'x12_4050_274R_GroupSiteProvider_20141116.edi'
+
+HYB_PROVIDERS QUERY WITH STATUS=Select count(*) from HYB_PROVIDERS WHERE STATUS = 'Accepted'
+#claimnumber is null, not in json do we need one ???
+
+HYB_PROVIDERS QUERY WITH CLAIMNUMBER=Select count(*) from HYB_PROVIDERS WHERE BASEKEY = '296775206'
+
+HYB_PROVIDERS QUERY WITH SRCID STATUS=Select count(*) from "HYB_PROVIDERS" WHERE SOURCEIDENTIFIER = 'x12_4050_274R_GroupSiteProvider_20141116.edi' AND STATUS= 'Accepted'
+
+HYB_PROVIDERS QUERY WITH BASEKEY=Select count(*) from "HYB_PROVIDERS" WHERE BASEKEY = '627039427'
+
+#claimnumber is null
+#runGenericQuery51.id=HYB_PROVIDERS QUERY WITH BASEKEY CLAIMNUMBER
+#runGenericQuery52.query=Select count(*) from "HYB_PROVIDERS" WHERE  BASEKEY = '248338045' AND CLAIMNUMBER = ?
+
+
+##HYB_RXCLAIMS
+
+#_id is null
+
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE "_ID" = 'v6noACJI6QFYDPfRP--1482450815379'
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE SOURCEIDENTIFIER = 'MIDD'
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE STATUS = 'Accepted'
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE CLAIMNUMBER = 'bJEFJENMCISWRhTWu'
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE SOURCEIDENTIFIER = 'MIDn' AND STATUS= 'Accepted'
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE BASEKEY = 'v6noACJI6QFYDPfRP'
+HYB_RXCLAIMS QUERY WITH MEMBERID=Select count(*) from HYB_RXCLAIMS WHERE  BASEKEY = 'v6noACJI6QFYDPfRP' AND CLAIMNUMBER = 'HsMyNhXWeycsPrklv'
+
+#HYB_PROFESSIONALCLAIMS
+
+# _ID is null
+
+PROFCLAIMS QUERY WITH ID=Select count(*) from HYB_PROFESSIONALCLAIMS WHERE "_ID" = 'nxkeb6KvbBtTB0YjG-24-1482442111256'
+PROFCLAIMS QUERY WITH SRCID=Select count(*) from HYB_PROFESSIONALCLAIMS WHERE SOURCEIDENTIFIER = 'MIDE'
+PROFCLAIMS QUERY WITH STATUS=Select count(*) from HYB_PROFESSIONALCLAIMS WHERE STATUS = 'Accepted'
+PROFCLAIMS QUERY WITH CLAIMNUMBER=Select count(*) from HYB_PROFESSIONALCLAIMS hc WHERE hc.json_document.claimNumber = 'gPXsst0cyxaH17wO3'
+PROFCLAIMS QUERY WITH SRCID STATUS=Select count(*) from HYB_PROFESSIONALCLAIMS WHERE SOURCEIDENTIFIER = 'MIDl' AND STATUS= 'Accepted'
+PROFCLAIMS QUERY WITH BASEKEY=Select count(*) from HYB_PROFESSIONALCLAIMS WHERE BASEKEY = 'iYuwSAkDFY6eVNXUG'
+PROFCLAIMS QUERY WITH BASEKEY CLAIMNUMBER=Select count(*) from HYB_PROFESSIONALCLAIMS hc WHERE  BASEKEY = 'iYuwSAkDFY6eVNXUG' AND hc.json_document.claimNumber = 'JExHiJNgO1tRjCy5V'
+
+
+ALL JSON_RXCLAIMS COUNT QUERY=Select count(*) from JSON_RXCLAIMS
+ALL JSON_PROFESSIONALCLAIMS COUNT QUERY=Select count(*) from JSON_PROFESSIONALCLAIMS
+
+
+ALL HYB_MEMBERS COUNT QUERY=Select count(*) from HYB_MEMBERS
+ALL HYB_PROVIDERS COUNT QUERY=Select count(*) from HYB_PROVIDERS
+ALL HYB_INSTCLAIMS COUNT QUERY=Select count(*) from HYB_INSTCLAIMS
+ALL HYB_RXCLAIMS COUNT QUERY=Select count(*) from HYB_RXCLAIMS
+ALL HYB_PROFESSIONALCLAIMS COUNT QUERY=Select count(*) from HYB_PROFESSIONALCLAIMS
+
+
+#JSON_MEGEPISODE
+
+JSON_MEGEPISODE WITH ID=SELECT count(*) FROM JSON_MEGEPISODE JM WHERE JM.json_document."_id"='ObjectId(57d5c85d088b5e0f5AKIHulR)'
+JSON_MEGEPISODE WITH MEMBERID=SELECT count(*) FROM JSON_MEGEPISODE JM WHERE JM.json_document.memberId='Bkvj20482791zGwToG'
+
+#JSON_CLINICALINDICATOR
+# NO DATA YET
+JSON_CLINICALINDICATOR WITH ID=SELECT count(*) FROM JSON_CLINICALINDICATOR JCI WHERE JCI.json_document."_id"='ObjectId(57d5c85d088b5e0f5XIsgJJZ)'
+JSON_CLINICALINDICATOR WITH MEMBERID=SELECT count(*) FROM JSON_CLINICALINDICATOR JCI WHERE JCI.json_document.memberId='Bkvj20482791zGwToG'
+
+#JSON_MEMPROVATTRI
+# NO DATA YET
+
+JSON_MEMPROVATTRI WITH ID=SELECT count(*) FROM JSON_MEMPROVATTRI JM WHERE JM.json_document."_id"='ObjectId(57d5c85d088b5e0f5ucqOOpk)'
+JSON_MEMPROVATTRI WITH MEMBERID=SELECT count(*) FROM JSON_MEMPROVATTRI JM WHERE JM.json_document.memberId='cLvZ89906934ltoOju'
+JSON_MEMPROVATTRI WITH ATTRIBUTEDPROVIDERID=SELECT count(*) FROM JSON_MEMPROVATTRI JM WHERE JM.json_document.attributedProviderId='172764721'
+
+#JSON_REQUEST
+# NO DATA YET
+
+JSON_REQUEST WITH ID=SELECT count(*) FROM JSON_REQUEST JR WHERE JR.json_document."_id"='requestId806505'
+JSON_REQUEST WITH MEMBERID=SELECT count(*) FROM JSON_REQUEST JR WHERE JR.json_document.MemberID='GYYU59101440PphmIt'
+#runGenericQuery83.id=JSON_REQUEST WITH OVERALLSTATUSDESCRIPTION
+#runGenericQuery83.query=SELECT JR.json_document FROM JSON_REQUEST JR WHERE JR.json_document.OverallRequestStatusDescription='Approved'

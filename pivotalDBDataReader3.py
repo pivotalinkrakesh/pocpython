@@ -1,59 +1,71 @@
 #import perf
-defaultTable = 'json_members'
-DATA_MISSING='DATAMISSING'
-episodefields=['_id', 'subClientId', 'episodeSid', 'claimNumber', 'claimLineNumber', 'claimType', 'processEndDate']
-	
-def getEpisodeJson(claimDict):
-	_jsonDict = {}
-	for field in episodefields:
-		_jsonDict[field]=claimDict.get(field, DATA_MISSING)
-	print(json.dumps(_jsonDict))
+defaultpropertiesfile = 'inquirer.properties'
 
-def executeQuery(tableName):
-	conn = cx_Oracle.connect('system', 'pass_4Temp', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
-	cursor = conn.cursor()
+def readFile(filename):
+	print 'Reading file %s', filename
+	propsfile = open(filename, 'r')
+	props = {}
+	for line in propsfile.readlines():
+		if(line.strip()):
+			#print line
+			if(line.find('#') <0):
+				key,val = line.split('=',1)
+				props[key]=val.strip('\n')
+
+	#print "dict data",props
+	
+	return props
+
+def executeQueries(props):
+	connection = initOracle(props);	
+	cursor = connection.cursor()
+
+	queries=[]
 	params=[]
-	
-	query = 'select json_doc from ' + tableName
-	print ('Executing select on {} using query {}...'.format(tableName, query))
-	start = time.time()
-	cursor.execute(query, params)
-	
-        #colnames = [desc[0] for desc in cursor.description]
-        #print(colnames)
-	count = 0
-	for result in cursor.fetchall():
-		_json = json.loads(result[0])
-		#print 'Data _id is {} and status is {}'.format(_json.get('_id', 'DATAMISSING'), _json.get('_id', 'DATAMISSING'))
-		count = count + 1
-                #for (name, value) in zip(colnames, row):
-                #        print(name, value)
-                        
-        #print "Total Records {}".format(count)
-	
-	elapsed = (time.time() - start)	
-	#print elapsed, ' seconds'
+
+	for k in sorted(props.keys()):
+		match = re.search(r'\.query', k)
+		if(match):
+			query = props.get(k)
+			match  = re.search(r'\?', query)
+			if (not match):
+				print '### Executing query id:{} sql:{}'.format(k,query)
+				start = time.time()
+				cursor.execute(query, params)
+				rs = cursor.fetchone()
+				if(rs):
+					result = rs[0]
+				else:
+					result = 'null'
+				elapsed = (time.time() - start)	
+				print 'result {} took {}'.format(result, elapsed)
 		
 
 def init():
-	_table = defaultTable		
+	file = defaultpropertiesfile		
 	if(len(sys.argv) >= 2):
 		file = sys.argv[1]	
-	return _table
+	#print('using property file ', file)
+	props = readFile(file)
+	return props
 	
+def initOracle(props):
+	conn = cx_Oracle.connect('med_json', 'med_json', '129.144.154.94:1521/pdb1.a428714.oraclecloud.internal')
+	return conn
+
 
 def main():
-	tableName = init()	
-	executeQuery(tableName)
-	
+	start = time.time()
+	properties = init()	
+	executeQueries(properties)
+	elapsed = (time.time() - start)	
+	print '### Total execution time {} seconds'.format(elapsed)
+
 
 if __name__ == '__main__':
 	import sys
 	import re
 	import time
-	import json
 	#import cx_Oracle
-	_testrxClaim = '{\"baseKey\":\"fEhSgHT75Cfe73eT5\",\"filler\":1482547093545,\"_id\":\"fEhSgHT75Cfe73eT5--1482547093545\",\"clientId\":\"HCS\",\"subClientId\":\"NM1\",\"isLatest\":\"false\",\"processDate\":\"2015-06-25T08:17:52.000Z\",\"sourceIdentifier\":\"MIDV\",\"status\":\"Accepted\",\"memberId\":\"null\",\"dispensedDate\":\"2015-08-07T09:54:42.000Z\",\"ndc\":\"00591320201\",\"drugCodeDesc\":\"Hydrocodone-Acetaminophen Tab 5-325 MG\",\"productCodeDescAbbr\":\"HYDROCO/APAP TAB 5-325MG\",\"quantityDispensed\":53,\"daysSupply\":\"NumberLong(5)\",\"refillNumber\":\"0\",\"prescriptionNumber\":\"00000110144492169024\",\"copayAmount\":4.8,\"allowedAmount\":4.8,\"ingredientCost\":4.8,\"claimNumber\":\"WjubpByKajRQsrQvY\",\"prescriberId\":\"0098383UXNNMFW\",\"adjustmentTypeCode\":\"3\",\"orderingProviderDeaId\":\"0098383UXNNMFW\",\"pharmacyID\":\"UNKNOWN\",\"chargedDollarAmount\":7.92,\"deductible\":0,\"dispenseAsWrittenCode\":\"0\",\"dispenseFee\":2,\"groupID\":\"G1008635672\",\"healthPlanName\":\"H613018451\",\"patientFirstName\":\"Steve\",\"patientLastName\":\"Smith\",\"patientRelation\":\"1\",\"brandName\":\"G\",\"drugType\":\"G\",\"providerFirstName\":\"Steve\",\"providerLastName\":\"Loxly\",\"pcpFirstName\":null,\"pcpId\":\"UNKNOWN\",\"pcpLastName\":null,\"routeOfAdministration\":\"OR\",\"adminRouteDesc\":\"Oral\",\"gpi10Code\":\"6599170210\",\"gpi10Description\":\"Hydrocodone-Acetaminophen\",\"drugPackageSize\":100,\"drugPackageDescription\":\"BOTTLE\"}'
-	json.loads(_testrxClaim)
-	getEpisodeJson(json.loads(_testrxClaim))
 	#main()
+	init()
