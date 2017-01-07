@@ -42,7 +42,7 @@ def executeQueries(props):
 			
 			result = count
 			
-		elapsed = (time.time() - start)/100
+		elapsed = time.time() - start
 		print 'query {}, {}, {} '.format(k, elapsed, result)
 		
 

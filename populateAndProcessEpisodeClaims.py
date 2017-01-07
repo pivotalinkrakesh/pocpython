@@ -76,19 +76,12 @@ def populateEpisodeClaimFromTable(tableName):
 	print 'loading from table:{}'.format(tableName)
 	connection = initOracle()	
 	cursor = connection.cursor()
-	params=[]
-	
-	query = 'select xx.json_document from ' + tableName + ' xx where xx.json_document.memberId in :1'
-	try:
-		cursor.prepare(query)
-	except cx_Oracle.DatabaseError, exception:
-		printf ('Failed to prepare query %s\n',query)
-		printException (exception)
-		exit (1)
+
+	query = "select xx.json_document from " + tableName + " xx where xx.json_document.memberId in %s" % str(tuple(membersList)).replace(',)',')')
 
 	#print 'Executing select on {} using query {}...'.format(tableName, query)
 	cursor.arraysize = readsize
-	cursor.execute(None, membersList)
+	cursor.execute(query, [])
 	
 	# get another connection
 	conn2 = initOracle()

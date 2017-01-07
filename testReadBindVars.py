@@ -76,23 +76,13 @@ def populateEpisodeClaimFromTable(tableName):
 	print 'loading from table:{}'.format(tableName)
 	connection = initOracle()	
 	cursor = connection.cursor()
-	params=[]
 
-	for member in membersList:
-		params
+	query = "select xx.json_document from " + tableName + " xx where xx.json_document.memberId in %s" % str(tuple(membersList)).replace(',)',')')
 
-	query = 'select xx.json_document from ' + tableName + ' xx where xx.json_document.memberId in :1'
-	try:
-		cursor.prepare(query)
-	except cx_Oracle.DatabaseError, exception:
-		printf ('Failed to prepare query %s\n',query)
-		printException (exception)
-		exit (1)
-
-	#print 'Executing select on {} using query {}...'.format(tableName, query)
+	print 'Executing select on {} using query {}...'.format(tableName, query)
 	cursor.arraysize = readsize
-	cursor.execute(None, membersList)
-	
+	cursor.execute(query, [])
+	count=0
         for result in cursor.fetchall():
                 _json = json.loads(result[0])
                 print 'Data {}'.format(_json)
@@ -106,67 +96,14 @@ def populateEpisodeClaimFromTable(tableName):
 
 
 def processEpisodeClaims():
-
-	#'''Read n members with status='Active' randomly from members table '''
-	#''' Delete from PJ_episodeclaims where memberId in n
-	#'''	read rxClaims by member id and insert into episodeClaims '''
-	#'''	read proClaims by member id and insert into episodeClaims, validate provider against provider table '''
-	#'''	read instClaims by member id and insert into episodeClaims, validate provider against provider table '''
-	#'''		
-
 	populateFromRxClaims()
-
-def deleteEpisodeClaims():
-	start = time.time()
-	connection = initOracle();	
-	cursor = connection.cursor()
-	print 'Deleting from episodeclaims'
-
-	cursor.prepare('delete from PJ_episodeclaims rx where rx.json_document.memberId=:memberid')
-
-	for member in membersList:
-		try:
-			cursor.execute(None, memberid=member)		
-			result = cursor.rowcount
-			print 'Table: [episodeClaims] Total Records deleted {}'.format(result)
-		except cx_Oracle.DatabaseError, exception:
-			printf ('Failed to execute cursor\n')
-			printException (exception)
-			exit (1)	
-
-	cursor.close()
-	connection.commit()
-	connection.close()
-
-	elapsed = (time.time() - start)	
-	print '### deleteEpisodeClaims Deleted {} record took time {} seconds'.format(result, elapsed)
-
 
 def readMembersData():
 	global membersList
-	membersList= ['brRv24283381fcALAl', 'nLiB80843933FLaLWo']
+	#membersList= ['brRv24283381fcALAl', 'nLiB80843933FLaLWo']
+	membersList= ['brRv24283381fcALAl']
 	print 'membersList is {}'.format(membersList)
 	
-	
-def getRandomList():
-	# Get Total Records from Table where status='Active'.
-	#cursor.execute('select count(*) from members where json_document.id=\"Active\"')
-	#totalrecs = cursor.fetch()
-	# for sake of POC we know we have 1999 members
-	totalrecs = 1999
-
-	# Number of records to process
-	nummembers = int(props.get('membersToProcess'))
-	print "Random member records to process {}".format(nummembers)
-	
-	# save random number in a list.
-	_randList = []
-	for i in range(nummembers):
-		_randList.append(random.randrange(totalrecs))
-		_randList.sort()
-	print _randList
-	return _randList
-
 def init():
 
 	readMembersData()
