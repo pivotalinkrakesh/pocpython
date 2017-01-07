@@ -53,21 +53,21 @@ def populateEpisodeSids():
 
 def populateFromRxClaims():
 	global episodefields
-	print('populating from JSON_RXClaims..')
+	print('populating from PJ_RXClaims..')
 	episodefields=rxclaimsfields
-	populateEpisodeClaimFromTable('JSON_RXCLAIMS')
+	populateEpisodeClaimFromTable('PJ_RXCLAIMS')
 
 def populateFromInstClaims():
 	global episodefields
-	print('populating from JSON_INSTCLAIMS..')
+	print('populating from PJ_INSTCLAIMS..')
 	episodefields=instclaimsfields
-	populateEpisodeClaimFromTable('JSON_INSTCLAIMS')
+	populateEpisodeClaimFromTable('PJ_INSTCLAIMS')
 
 def populateFromProfessionalClaims():
 	global episodefields
-	print('populating from JSON_PROFESSIONALCLAIMS..')
+	print('populating from PJ_PROFESSIONALCLAIMS..')
 	episodefields=professionalclaimsfields
-	populateEpisodeClaimFromTable('JSON_PROFESSIONALCLAIMS')
+	populateEpisodeClaimFromTable('PJ_PROFESSIONALCLAIMS')
 
 def populateEpisodeClaimFromTable(tableName):
 	global membersList
@@ -77,7 +77,10 @@ def populateEpisodeClaimFromTable(tableName):
 	connection = initOracle()	
 	cursor = connection.cursor()
 	params=[]
-	
+
+	for member in membersList:
+		params
+
 	query = 'select xx.json_document from ' + tableName + ' xx where xx.json_document.memberId in :1'
 	try:
 		cursor.prepare(query)
@@ -90,25 +93,10 @@ def populateEpisodeClaimFromTable(tableName):
 	cursor.arraysize = readsize
 	cursor.execute(None, membersList)
 	
-	# get another connection
-	conn2 = initOracle()
-	cursor2=conn2.cursor()
-	cursor2.prepare("insert into json_episodeclaims (json_document) values(:1)")
-        count = 0
-        massiveData=[]
-
         for result in cursor.fetchall():
                 _json = json.loads(result[0])
-                del massiveData[:]
-                #print 'Data {}'.format(_json)
-              	massiveData.append(getEpisodeJson(_json))
-		#print 'inserting {} into json_episodeclaims'.format(massiveData)
-		cursor2.execute(None, massiveData)
+                print 'Data {}'.format(_json)
          	count = count + 1
-        
-        cursor2.close()
-        conn2.commit()
-        conn2.close()
 
         cursor.close()
         connection.close()
@@ -120,16 +108,13 @@ def populateEpisodeClaimFromTable(tableName):
 def processEpisodeClaims():
 
 	#'''Read n members with status='Active' randomly from members table '''
-	#''' Delete from json_episodeclaims where memberId in n
+	#''' Delete from PJ_episodeclaims where memberId in n
 	#'''	read rxClaims by member id and insert into episodeClaims '''
 	#'''	read proClaims by member id and insert into episodeClaims, validate provider against provider table '''
 	#'''	read instClaims by member id and insert into episodeClaims, validate provider against provider table '''
 	#'''		
 
-	deleteEpisodeClaims()
 	populateFromRxClaims()
-	populateFromInstClaims()
-	populateFromProfessionalClaims()
 
 def deleteEpisodeClaims():
 	start = time.time()
@@ -137,7 +122,7 @@ def deleteEpisodeClaims():
 	cursor = connection.cursor()
 	print 'Deleting from episodeclaims'
 
-	cursor.prepare('delete from json_episodeclaims rx where rx.json_document.memberId=:memberid')
+	cursor.prepare('delete from PJ_episodeclaims rx where rx.json_document.memberId=:memberid')
 
 	for member in membersList:
 		try:
@@ -159,23 +144,7 @@ def deleteEpisodeClaims():
 
 def readMembersData():
 	global membersList
-	# get connection
-	conn = initOracle()
-	# read members data into a collection.
-	cursor = conn.cursor()
-	cursor.execute("select members.json_document.baseKey from json_members members where members.json_document.status = \'Accepted\'")
-	_count=0
-	_randList = getRandomList()
-	
-	randomMember=_randList.pop(0)
-	for result in cursor.fetchall():
-		_count += 1
-		if(_count == randomMember):
-			membersList.append(result[0])
-			if len(_randList) >0:
-				randomMember=_randList.pop(0)
-			else:
-				break
+	membersList= ['brRv24283381fcALAl', 'nLiB80843933FLaLWo']
 	print 'membersList is {}'.format(membersList)
 	
 	
@@ -199,13 +168,7 @@ def getRandomList():
 	return _randList
 
 def init():
-	file = defaultpropertiesfile		
-	if(len(sys.argv) >= 2):
-		file = sys.argv[1]	
 
-	readProperties(file)
-
-	populateEpisodeSids()
 	readMembersData()
 
 def readProperties(filename):

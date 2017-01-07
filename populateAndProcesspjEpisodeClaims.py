@@ -53,21 +53,21 @@ def populateEpisodeSids():
 
 def populateFromRxClaims():
 	global episodefields
-	print('populating from JSON_RXClaims..')
+	print('populating from PJ_RXClaims..')
 	episodefields=rxclaimsfields
-	populateEpisodeClaimFromTable('JSON_RXCLAIMS')
+	populateEpisodeClaimFromTable('PJ_RXCLAIMS')
 
 def populateFromInstClaims():
 	global episodefields
-	print('populating from JSON_INSTCLAIMS..')
+	print('populating from PJ_INSTCLAIMS..')
 	episodefields=instclaimsfields
-	populateEpisodeClaimFromTable('JSON_INSTCLAIMS')
+	populateEpisodeClaimFromTable('PJ_INSTCLAIMS')
 
 def populateFromProfessionalClaims():
 	global episodefields
-	print('populating from JSON_PROFESSIONALCLAIMS..')
+	print('populating from PJ_PROFESSIONALCLAIMS..')
 	episodefields=professionalclaimsfields
-	populateEpisodeClaimFromTable('JSON_PROFESSIONALCLAIMS')
+	populateEpisodeClaimFromTable('PJ_PROFESSIONALCLAIMS')
 
 def populateEpisodeClaimFromTable(tableName):
 	global membersList
@@ -93,7 +93,7 @@ def populateEpisodeClaimFromTable(tableName):
 	# get another connection
 	conn2 = initOracle()
 	cursor2=conn2.cursor()
-	cursor2.prepare("insert into json_episodeclaims (json_document) values(:1)")
+	cursor2.prepare("insert into PJ_episodeclaims (json_document) values(:1)")
         count = 0
         massiveData=[]
 
@@ -102,7 +102,7 @@ def populateEpisodeClaimFromTable(tableName):
                 del massiveData[:]
                 #print 'Data {}'.format(_json)
               	massiveData.append(getEpisodeJson(_json))
-		#print 'inserting {} into json_episodeclaims'.format(massiveData)
+		#print 'inserting {} into PJ_episodeclaims'.format(massiveData)
 		cursor2.execute(None, massiveData)
          	count = count + 1
         
@@ -120,13 +120,13 @@ def populateEpisodeClaimFromTable(tableName):
 def processEpisodeClaims():
 
 	#'''Read n members with status='Active' randomly from members table '''
-	#''' Delete from json_episodeclaims where memberId in n
+	#''' Delete from PJ_episodeclaims where memberId in n
 	#'''	read rxClaims by member id and insert into episodeClaims '''
 	#'''	read proClaims by member id and insert into episodeClaims, validate provider against provider table '''
 	#'''	read instClaims by member id and insert into episodeClaims, validate provider against provider table '''
 	#'''		
 
-	deleteEpisodeClaims()
+	#deleteEpisodeClaims()
 	populateFromRxClaims()
 	populateFromInstClaims()
 	populateFromProfessionalClaims()
@@ -137,7 +137,7 @@ def deleteEpisodeClaims():
 	cursor = connection.cursor()
 	print 'Deleting from episodeclaims'
 
-	cursor.prepare('delete from json_episodeclaims rx where rx.json_document.memberId=:memberid')
+	cursor.prepare('delete from PJ_episodeclaims rx where rx.json_document.memberId=:memberid')
 
 	for member in membersList:
 		try:
@@ -163,7 +163,7 @@ def readMembersData():
 	conn = initOracle()
 	# read members data into a collection.
 	cursor = conn.cursor()
-	cursor.execute("select members.json_document.baseKey from json_members members where members.json_document.status = \'Accepted\'")
+	cursor.execute("select members.json_document.baseKey from PJ_members members where members.json_document.status = \'Accepted\'")
 	_count=0
 	_randList = getRandomList()
 	
