@@ -55,21 +55,21 @@ def populateEpisodeClaims():
 
 def populateFromRxClaims():
 	global episodefields
-	print('populating from JSON_RXClaims..')
+	print('populating from HYB_RXClaims..')
 	episodefields=rxclaimsfields
-	populateEpisodeClaimFromTable('JSON_RXCLAIMS')
+	populateEpisodeClaimFromTable('HYB_RXCLAIMS')
 
 def populateFromInstClaims():
 	global episodefields
-	print('populating from JSON_INSTCLAIMS..')
+	print('populating from HYB_INSTCLAIMS..')
 	episodefields=instclaimsfields
-	populateEpisodeClaimFromTable('JSON_INSTCLAIMS')
+	populateEpisodeClaimFromTable('HYB_INSTCLAIMS')
 
 def populateFromProfessionalClaims():
 	global episodefields
-	print('populating from JSON_PROFESSIONALCLAIMS..')
+	print('populating from HYB_PROFESSIONALCLAIMS..')
 	episodefields=professionalclaimsfields
-	populateEpisodeClaimFromTable('JSON_PROFESSIONALCLAIMS')
+	populateEpisodeClaimFromTable('HYB_PROFESSIONALCLAIMS')
 
 def populateEpisodeClaimFromTable(tableName):
 	print 'loading from table:{}'.format(tableName)
@@ -79,8 +79,8 @@ def populateEpisodeClaimFromTable(tableName):
 	cursor = connection.cursor()
 	params=[]
 	
-	query = 'select json_document from ' + tableName
-	#print 'Executing select on {} using query {}...'.format(tableName, query)
+	query = 'select "_ID", memberid, json_document from ' + tableName
+	print 'Table:{} Query: {}'.format(tableName, query)
 
 	cursor.arraysize = readsize
 	cursor.execute(query, params)
@@ -88,7 +88,7 @@ def populateEpisodeClaimFromTable(tableName):
 	# get another connection
 	conn2 = initOracle()
 	cursor2=conn2.cursor()
-	cursor2.prepare("insert into hyb_episodeclaims (json_document, memberid, \"_ID\") values(:json,:memberId,:id)")
+	cursor2.prepare('insert into hyb_episodeclaims (json_document, memberid, "_ID") values(:json,:memberId,:id)')
         count = 0
         massiveData={}
         # INSERT ONE RECORD
@@ -105,11 +105,16 @@ def populateEpisodeClaimFromTable(tableName):
 	
         for result in cursor.fetchall():
                 massiveData.clear()
-                _json = json.loads(result[0])
+                ID = result[0]
+                memberid =result[1]
+                _json = json.loads(result[2])
+                
+                #print '_ID {} memberid {} _json {}'.format(ID, memberid, _json)
+                
                 jsondoc=getEpisodeJson(_json)
 		massiveData['json']=jsondoc
-		massiveData['memberId']=_json.get('memberId')
-		massiveData['id']=_json['_id']
+		massiveData['memberId']=memberid
+		massiveData['id']=ID
 		cursor2.execute(None, massiveData)
          	count = count + 1
         
@@ -118,10 +123,10 @@ def populateEpisodeClaimFromTable(tableName):
         conn2.close()
         cursor.close()
         connection.close()
-        print "Total Records Inserted {}".format(count)
-	
+
 	elapsed = (time.time() - start)	
-	print elapsed, ' seconds'
+
+	print "Total Records Inserted {}, took {} seconds".format(count, elapsed)
 
 
 def init():
