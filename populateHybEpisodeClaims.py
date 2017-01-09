@@ -91,17 +91,6 @@ def populateEpisodeClaimFromTable(tableName):
 	cursor2.prepare('insert into hyb_episodeclaims (json_document, memberid, "_ID") values(:json,:memberId,:id)')
         count = 0
         massiveData={}
-        # INSERT ONE RECORD
-        #rs =cursor.fetchone()
-        #_json = json.loads(rs[0])
-        #print _json
-        #jsondoc=getEpisodeJson(_json)
-        #massiveData['json']=jsondoc
-        #massiveData['memberId']=_json.get('memberId')
-        #massiveData['id']=_json['_id']
-	#print 'inserting {} into json_episodeclaims'.format(massiveData)
-	#massiveData.append((jsondoc, 'false', _json['_id']))
-	#cursor2.execute(None, massiveData)
 	
         for result in cursor.fetchall():
                 massiveData.clear()

@@ -72,12 +72,13 @@ def populateFromProfessionalClaims():
 def populateEpisodeClaimFromTable(tableName):
 	global membersList
 
-	start = time.time()
 	print 'loading from table:{}'.format(tableName)
+	start = time.time()
+
 	connection = initOracle()	
 	cursor = connection.cursor()
 
-	query = "select xx._ID, xx.MEMBER_ID from " + tableName + " xx where xx.json_document.memberId in %s" % str(tuple(membersList)).replace(',)',')')
+	query = 'select "_ID", MEMBERID, json_document from ' + tableName + ' where memberid in %s' % str(tuple(membersList)).replace(',)',')')
 
 	#print 'Executing select on {} using query {}...'.format(tableName, query)
 	cursor.arraysize = readsize
@@ -86,16 +87,23 @@ def populateEpisodeClaimFromTable(tableName):
 	# get another connection
 	conn2 = initOracle()
 	cursor2=conn2.cursor()
-	cursor2.prepare("insert into HYB_episodeclaims ("_ID", MEMBERID, json_document) values(:1,:2,:3)")
+	cursor2.prepare('insert into hyb_episodeclaims (json_document, memberid, "_ID") values(:json,:memberId,:id)')
+	
         count = 0
-        massiveData=[]
+        massiveData={}
 
         for result in cursor.fetchall():
-                _json = json.loads(result[0])
-                del massiveData[:]
-                #print 'Data {}'.format(_json)
-              	massiveData.append(getEpisodeJson(_json))
-		#print 'inserting {} into HYB_episodeclaims'.format(massiveData)
+                massiveData.clear()
+                ID = result[0]
+                memberid =result[1]
+                _json = json.loads(result[2])
+
+                #print '_ID {} memberid {} _json {}'.format(ID, memberid, _json)
+
+                jsondoc=getEpisodeJson(_json)
+		massiveData['json']=jsondoc
+		massiveData['memberId']=memberid
+		massiveData['id']=ID
 		cursor2.execute(None, massiveData)
          	count = count + 1
         
@@ -130,7 +138,7 @@ def deleteEpisodeClaims():
 	cursor = connection.cursor()
 	print 'Deleting from episodeclaims'
 
-	cursor.prepare('delete from HYB_episodeclaims rx where rx.MEMBERID=:memberid')
+	cursor.prepare('delete from HYB_episodeclaims where MEMBERID=:memberid')
 
 	for member in membersList:
 		try:
@@ -156,7 +164,7 @@ def readMembersData():
 	conn = initOracle()
 	# read members data into a collection.
 	cursor = conn.cursor()
-	cursor.execute("select members.MEMBERID from HYB_members members where members.STATUS= \'Accepted\'")
+	cursor.execute("select MEMBERID from HYB_members where STATUS= \'Accepted\'")
 	_count=0
 	_randList = getRandomList()
 	
