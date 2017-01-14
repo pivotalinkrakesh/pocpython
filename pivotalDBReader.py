@@ -1,10 +1,11 @@
 #import perf
+import collections
 defaultpropertiesfile = 'inquirer.properties'
 
 def readFile(filename):
 	print 'Reading file {}'.format(filename)
 	propsfile = open(filename, 'r')
-	props = {}
+	props = collections.OrderedDict()
 	for line in propsfile.readlines():
 		if(line.strip()):
 			#print line
@@ -25,7 +26,7 @@ def executeQueries(props):
 	queries=[]
 	params=[]
 
-	for k in sorted(props.keys()):
+	for k in props.keys():
 		query = props.get(k)
 		#print '### Executing query id:{} sql:{}'.format(k,query)
 		start = time.time()
@@ -42,7 +43,7 @@ def executeQueries(props):
 			
 			result = count
 			
-		elapsed = time.time() - start
+		elapsed = (time.time() - start) * 1000
 		print 'query {}, {}, {} '.format(k, elapsed, result)
 		
 
@@ -63,7 +64,7 @@ def main():
 	start = time.time()
 	properties = init()	
 	executeQueries(properties)
-	elapsed = (time.time() - start)	
+	elapsed = (time.time() - start) * 1000
 	print '### Total execution time {} seconds'.format(elapsed)
 
 
